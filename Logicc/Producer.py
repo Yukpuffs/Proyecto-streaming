@@ -1,6 +1,7 @@
 #Represents the flow of shopping carts, but in function with the producer
-
+import socket
 import time
+import json
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_timestamp, unix_timestamp, current_timestamp
 
@@ -21,7 +22,12 @@ carritos_df = carrito_rdd.withColumn("timestamp_ts", to_timestamp(col("timestamp
 order = carritos_df.orderBy(col("timestamp_ts").asc())
 
 # 4. Action every 10 seconds, show the carts that are older than 60 seconds
-
+servidor = socket.socket()
+servidor.bind(("localhost", 9999))
+servidor.listen(1)
+print("Productor esperando al consumidor...")
+conexion, _ = servidor.accept()
+print("Consumidor conectado")
 vistos = set()  # for keeping track of the carts already shown
 
 while True:
@@ -37,7 +43,7 @@ while True:
 
     if siguiente:
         fila = siguiente[0]
-        print(fila.asDict())
+        conexion.sendall((json.dumps(fila.asDict(), default=str, ensure_ascii=False) + "\n").encode("utf-8"))
         vistos.add(fila["carrito_id"])
     else:
         print("No hay más carritos abandonados por mostrar")
