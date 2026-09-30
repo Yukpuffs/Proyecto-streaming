@@ -1,0 +1,302 @@
+[
+  {
+    "carrito_id": "5da93b",
+    "usuario": "usuario_18",
+    "email": "usuario_18@gmail.com",
+    "producto": "Aspiradora robot",
+    "categoria": "Hogar",
+    "cantidad": 1,
+    "precio_unitario": 899900,
+    "timestamp": "2026-09-27T18:00:00"
+  },
+  {
+    "carrito_id": "fb922f",
+    "usuario": "usuario_13",
+    "email": "usuario_13@gmail.com",
+    "producto": "Pantalón jean",
+    "categoria": "Ropa",
+    "cantidad": 1,
+    "precio_unitario": 99900,
+    "timestamp": "2026-09-27T18:00:02"
+  },
+  {
+    "carrito_id": "f91035",
+    "usuario": "usuario_37",
+    "email": "usuario_37@gmail.com",
+    "producto": "Zapatillas running",
+    "categoria": "Ropa",
+    "cantidad": 3,
+    "precio_unitario": 219000,
+    "timestamp": "2026-09-27T18:00:02"
+  },
+  {
+    "carrito_id": "9515d1",
+    "usuario": "usuario_16",
+    "email": "usuario_16@gmail.com",
+    "producto": "Cafetera espresso",
+    "categoria": "Hogar",
+    "cantidad": 2,
+    "precio_unitario": 349900,
+    "timestamp": "2026-09-27T18:00:12"
+  },
+  {
+    "carrito_id": "18b862",
+    "usuario": "usuario_36",
+    "email": "usuario_36@gmail.com",
+    "producto": "Set de sartenes",
+    "categoria": "Hogar",
+    "cantidad": 3,
+    "precio_unitario": 259000,
+    "timestamp": "2026-09-27T18:00:16"
+  },
+  {
+    "carrito_id": "9acb9d",
+    "usuario": "usuario_06",
+    "email": "usuario_06@gmail.com",
+    "producto": "Zapatillas running",
+    "categoria": "Ropa",
+    "cantidad": 2,
+    "precio_unitario": 219000,
+    "timestamp": "2026-09-27T18:00:15"
+  },
+  {
+    "carrito_id": "df4443",
+    "usuario": "usuario_39",
+    "email": "usuario_39@gmail.com",
+    "producto": "Mouse gamer",
+    "categoria": "Electrónica",
+    "cantidad": 3,
+    "precio_unitario": 65000,
+    "timestamp": "2026-09-27T18:00:06"
+  },
+  {
+    "carrito_id": "b44baa",
+    "usuario": "usuario_21",
+    "email": "usuario_21@gmail.com",
+    "producto": "Pantalón jean",
+    "categoria": "Ropa",
+    "cantidad": 3,
+    "precio_unitario": 99900,
+    "timestamp": "2026-09-27T18:00:28"
+  },
+  {
+    "carrito_id": "53dea0",
+    "usuario": "usuario_19",
+    "email": "usuario_19@gmail.com",
+    "producto": "Audífonos Bluetooth",
+    "categoria": "Electrónica",
+    "cantidad": 2,
+    "precio_unitario": 89900,
+    "timestamp": "2026-09-27T18:00:16"
+  },
+  {
+    "carrito_id": "bc741d",
+    "usuario": "usuario_18",
+    "email": "usuario_18@gmail.com",
+    "producto": "Cargador inalámbrico",
+    "categoria": "Electrónica",
+    "cantidad": 4,
+    "precio_unitario": 55000,
+    "timestamp": "2026-09-27T18:00:18"
+  },
+  {
+    "carrito_id": "26d387",
+    "usuario": "usuario_24",
+    "email": "usuario_24@gmail.com",
+    "producto": "Juego de toallas",
+    "categoria": "Hogar",
+    "cantidad": 3,
+    "precio_unitario": 79900,
+    "timestamp": "2026-09-27T18:00:30"
+  },
+  {
+    "carrito_id": "cb4ac6",
+    "usuario": "usuario_38",
+    "email": "usuario_38@gmail.com",
+    "producto": "Cafetera espresso",
+    "categoria": "Hogar",
+    "cantidad": 2,
+    "precio_unitario": 349900,
+    "timestamp": "2026-09-27T18:00:22"
+  },
+  {
+    "carrito_id": "b2fdbb",
+    "usuario": "usuario_01",
+    "email": "usuario_01@gmail.com",
+    "producto": "Set de sartenes",
+    "categoria": "Hogar",
+    "cantidad": 2,
+    "precio_unitario": 259000,
+    "timestamp": "2026-09-27T18:01:00"
+  },
+  {
+    "carrito_id": "b1def6",
+    "usuario": "usuario_27",
+    "email": "usuario_27@gmail.com",
+    "producto": "Aspiradora robot",
+    "categoria": "Hogar",
+    "cantidad": 3,
+    "precio_unitario": 899900,
+    "timestamp": "2026-09-27T18:00:26"
+  },
+  {
+    "carrito_id": "fa830f",
+    "usuario": "usuario_04",
+    "email": "usuario_04@gmail.com",
+    "producto": "Licuadora",
+    "categoria": "Hogar",
+    "cantidad": 4,
+    "precio_unitario": 129900,
+    "timestamp": "2026-09-27T18:00:14"
+  },
+  {
+    "carrito_id": "ed521f",
+    "usuario": "usuario_25",
+    "email": "usuario_25@gmail.com",
+    "producto": "Chaqueta impermeable",
+    "categoria": "Ropa",
+    "cantidad": 1,
+    "precio_unitario": 189900,
+    "timestamp": "2026-09-27T18:00:30"
+  },
+  {
+    "carrito_id": "59b54b",
+    "usuario": "usuario_35",
+    "email": "usuario_35@gmail.com",
+    "producto": "Licuadora",
+    "categoria": "Hogar",
+    "cantidad": 2,
+    "precio_unitario": 129900,
+    "timestamp": "2026-09-27T18:01:04"
+  },
+  {
+    "carrito_id": "ceb89a",
+    "usuario": "usuario_15",
+    "email": "usuario_15@gmail.com",
+    "producto": "Monitor 24 pulgadas",
+    "categoria": "Electrónica",
+    "cantidad": 4,
+    "precio_unitario": 599900,
+    "timestamp": "2026-09-27T18:00:34"
+  },
+  {
+    "carrito_id": "9fa78c",
+    "usuario": "usuario_17",
+    "email": "usuario_17@gmail.com",
+    "producto": "Aspiradora robot",
+    "categoria": "Hogar",
+    "cantidad": 3,
+    "precio_unitario": 899900,
+    "timestamp": "2026-09-27T18:01:12"
+  },
+  {
+    "carrito_id": "811e66",
+    "usuario": "usuario_36",
+    "email": "usuario_36@gmail.com",
+    "producto": "Pantalón jean",
+    "categoria": "Ropa",
+    "cantidad": 3,
+    "precio_unitario": 99900,
+    "timestamp": "2026-09-27T18:01:16"
+  },
+  {
+    "carrito_id": "1b756b",
+    "usuario": "usuario_36",
+    "email": "usuario_36@gmail.com",
+    "producto": "Monitor 24 pulgadas",
+    "categoria": "Electrónica",
+    "cantidad": 3,
+    "precio_unitario": 599900,
+    "timestamp": "2026-09-27T18:00:20"
+  },
+  {
+    "carrito_id": "483edb",
+    "usuario": "usuario_36",
+    "email": "usuario_36@gmail.com",
+    "producto": "Cafetera espresso",
+    "categoria": "Hogar",
+    "cantidad": 3,
+    "precio_unitario": 349900,
+    "timestamp": "2026-09-27T18:01:45"
+  },
+  {
+    "carrito_id": "030c2a",
+    "usuario": "usuario_26",
+    "email": "usuario_26@gmail.com",
+    "producto": "Mouse gamer",
+    "categoria": "Electrónica",
+    "cantidad": 3,
+    "precio_unitario": 65000,
+    "timestamp": "2026-09-27T18:00:22"
+  },
+  {
+    "carrito_id": "7a0b62",
+    "usuario": "usuario_06",
+    "email": "usuario_06@gmail.com",
+    "producto": "Cargador inalámbrico",
+    "categoria": "Electrónica",
+    "cantidad": 4,
+    "precio_unitario": 55000,
+    "timestamp": "2026-09-27T18:00:46"
+  },
+  {
+    "carrito_id": "daf57d",
+    "usuario": "usuario_27",
+    "email": "usuario_27@gmail.com",
+    "producto": "Set de sartenes",
+    "categoria": "Hogar",
+    "cantidad": 1,
+    "precio_unitario": 259000,
+    "timestamp": "2026-09-27T18:01:12"
+  },
+  {
+    "carrito_id": "3b895f",
+    "usuario": "usuario_15",
+    "email": "usuario_15@gmail.com",
+    "producto": "Cafetera espresso",
+    "categoria": "Hogar",
+    "cantidad": 2,
+    "precio_unitario": 349900,
+    "timestamp": "2026-09-27T18:00:25"
+  },
+  {
+    "carrito_id": "544ce5",
+    "usuario": "usuario_15",
+    "email": "usuario_15@gmail.com",
+    "producto": "Gorra deportiva",
+    "categoria": "Ropa",
+    "cantidad": 1,
+    "precio_unitario": 39900,
+    "timestamp": "2026-09-27T18:01:18"
+  },
+  {
+    "carrito_id": "fc3a0a",
+    "usuario": "usuario_13",
+    "email": "usuario_13@gmail.com",
+    "producto": "Gorra deportiva",
+    "categoria": "Ropa",
+    "cantidad": 2,
+    "precio_unitario": 39900,
+    "timestamp": "2026-09-27T18:02:15"
+  },
+  {
+    "carrito_id": "cfcb40",
+    "usuario": "usuario_36",
+    "email": "usuario_36@gmail.com",
+    "producto": "Cargador inalámbrico",
+    "categoria": "Electrónica",
+    "cantidad": 4,
+    "precio_unitario": 55000,
+    "timestamp": "2026-09-27T18:01:24"
+  },
+  {
+    "carrito_id": "d1b4fb",
+    "usuario": "usuario_27",
+    "email": "usuario_27@gmail.com",
+    "producto": "Cargador inalámbrico",
+    "categoria": "Electrónica",
+    "cantidad": 2,
+    "precio_unitario": 55000,
+    "timestamp": "2026-09-27T18:01:27"
+  }
+]
