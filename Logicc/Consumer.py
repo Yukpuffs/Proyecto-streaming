@@ -2,15 +2,14 @@ import json
 import time
 from datetime import datetime
 from pathlib import Path # Replace the way to handle paths to files with the Path class
-
 from pyspark.sql import SparkSession # Library to create a SparkSession and work with Spark DataFrames
 from pyspark.sql import functions as F # Library to use functions in Spark DataFrames (columns, aggregations, etc.)
 
 BASE = Path(__file__).resolve().parent # Different way to get the path of the current file and its parent directory
 ARCHIVO_EVENTOS = BASE / "eventos.jsonl"
 
-GAP_SESION = "1 minute" # Time of inactivity to consider a session closed
-BUFFER_CIERRE_SEGUNDOS = 60 # Time extra to wait before considering a session closed
+GAP_SESION = "30 seconds" # Time of inactivity to consider a session closed
+BUFFER_CIERRE_SEGUNDOS = 30 # Time extra to wait before considering a session closed
 SALIDA = BASE / "notificaciones.jsonl"
 
 # Step 1: Create a SparkSession
@@ -22,10 +21,7 @@ spark = (SparkSession.builder
          .getOrCreate())
 spark.sparkContext.setLogLevel("ERROR")
 
-SALIDA.write_text("", encoding="utf-8")
-
 vistos = set() # A colection to keep track of already notified abandoned carts
-
 
 def calcular_y_notificar():
     if not ARCHIVO_EVENTOS.exists() or ARCHIVO_EVENTOS.stat().st_size == 0:
@@ -34,7 +30,7 @@ def calcular_y_notificar():
     # Step 2: Read the events from the JSONL file into a Spark DataFrame
 
     events = (spark.read.json(str(ARCHIVO_EVENTOS))
-               
+                
                #Step 3: Transform the data to prepare for session analysis
 
                .withColumn("event_time", F.to_timestamp("timestamp")) # Create a new column with the timestamp in datetime format
@@ -68,27 +64,34 @@ def calcular_y_notificar():
 
     filas = resultado.collect() # Collect the results into a list of rows
     nuevas = [r for r in filas if (r["usuario"], r["start_sesion"]) not in vistos] # Go through each row to identify which users have not been reviewed
-    if not nuevas:
+
+    if not nuevas: # if there are no new abandoned carts to notify, end the process 
         return
 
-    print(f"\n===== {len(nuevas)} carrito(s) abandonado(s) nuevo(s) =====")
     with open(SALIDA, "a", encoding="utf-8") as out:
-        for r in nuevas: # It goes through each row and marks it as viewed
-            vistos.add((r["usuario"], r["start_sesion"]))
-            productos = ", ".join(sorted(r["productos"])) # Sort the products in the cart 
+            for r in nuevas:
+                vistos.add((r["usuario"], r["start_sesion"])) # Add the user and session start time to the set of already notified abandoned carts
+                productos = ", ".join(sorted(r["productos"])) # Create a string with the products in the cart, sorted alphabetically
 
-            mensaje = (f"Dejaste en tu carrito: {productos} " # Create the message to notify the user about their abandoned cart
-                       f"(total ${r['valor_carrito']:,}). ¡Vuelve y termina tu compra!")
-            print(f"[CORREO a {r['email']}] {mensaje}")
+                mensaje = f"Dejaste en tu carrito: {productos} (total ${r['valor_carrito']:,}). ¡Vuelve y termina tu compra!"
 
-            out.write(json.dumps({
-                "usuario": r["usuario"], "email": r["email"],
-                "valor_carrito": r["valor_carrito"], "productos": sorted(r["productos"]),
-                "mensaje": mensaje,
-            }, ensure_ascii=False) + "\n")
+                out.write(json.dumps({ # Create a JSON object with the necessary information to notify the user about their abandoned cart
+                    "usuario": r["usuario"], "email": r["email"],
+                    "valor_carrito": r["valor_carrito"], "productos": sorted(r["productos"]),
+                    "mensaje": mensaje,
+                }, ensure_ascii=False) + "\n")
 
 
-print(f"Consumidor revisando {ARCHIVO_EVENTOS.name} cada 5s | sesión={GAP_SESION}")
-while True:
-    calcular_y_notificar()
-    time.sleep(5)
+def loop_consumidor(): 
+    print(f"Consumidor revisando {ARCHIVO_EVENTOS.name} cada 5s | sesión={GAP_SESION}")
+    while True:
+        try:
+            calcular_y_notificar()
+        except Exception as e:
+            print(f"Error procesando eventos: {e}")
+        time.sleep(5)
+
+
+if __name__ == '__main__':
+    SALIDA.write_text("", encoding="utf-8")
+    loop_consumidor()

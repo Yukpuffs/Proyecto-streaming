@@ -1,20 +1,32 @@
-
 import argparse
 import json
-import random # Library to generate random numbers and make random selections
+import random
+import threading
 import time
 from datetime import datetime
-from pathlib import Path # Replace the way to handle paths to files with the Path class
-
-# Step 2: Read the events from the JSONL file into a Spark DataFrame
+from pathlib import Path
+from flask import Flask, render_template, jsonify
 
 BASE = Path(__file__).resolve().parent
+PROYECTO_ROOT = BASE.parent
 ARCHIVO_EVENTOS = BASE / "eventos.jsonl"
+SALIDA_NOTIFICACIONES = BASE / "notificaciones.jsonl"
 
-#Step 3: Transform the data to prepare for consumer analysis
+app = Flask(
+    __name__,
+    template_folder=str(PROYECTO_ROOT / "Desing"),
+    static_folder=str(PROYECTO_ROOT / "Desing"),
+    static_url_path="" 
+)
 
-def cargar_eventos(prob_pago, semilla): # Funtion to simulate the events of users adding products to their carts and starting the payment process
-    with open(BASE / "carritos.json", encoding="utf-8") as f:
+# Renderiza la página principal
+@app.route('/')
+def web():
+    return render_template('Index.html')
+
+
+def cargar_eventos(prob_pago, semilla):
+    with open(BASE / "carritos.json", encoding="utf-8") as f: 
         carritos = json.load(f)
 
     carritos.sort(key=lambda c: c["timestamp"])
@@ -32,7 +44,7 @@ def cargar_eventos(prob_pago, semilla): # Funtion to simulate the events of user
             "precio_unitario": c["precio_unitario"],
         })
 
-    rnd = random.Random(semilla)
+    rnd = random.Random(semilla) 
     usuarios = sorted({e["usuario"] for e in eventos})
     compradores = {u for u in usuarios if rnd.random() < prob_pago}
 
@@ -62,19 +74,10 @@ def enviar(evento):
     return evento
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--intervalo", type=float, default=1.0,
-                    help="segundos entre eventos")
-    ap.add_argument("--prob-pago", type=float, default=0.4,
-                    help="probabilidad de que un usuario llegue a la pasarela de pago")
-    ap.add_argument("--semilla", type=int, default=7)
-    args = ap.parse_args()
-
-    # Empezar el archivo desde cero en cada corrida
+def generar_eventos_background(intervalo=1.0, prob_pago=0.4, semilla=7):
     ARCHIVO_EVENTOS.write_text("", encoding="utf-8")
 
-    cola, compradores, usuarios = cargar_eventos(args.prob_pago, args.semilla)
+    cola, compradores, usuarios = cargar_eventos(prob_pago, semilla)
     print(f"{len(cola)} eventos listos | {len(usuarios)} usuarios | "
           f"{len(compradores)} llegarán a pago: {sorted(compradores)}")
     print(f"  => deberían quedar como ABANDONADOS: "
@@ -86,11 +89,49 @@ def main():
             e = enviar(e)
             print(f"[{e['timestamp']}] {e['tipo_evento']:<16} {e['usuario']}"
                   f" {e.get('producto', '')}")
-            time.sleep(args.intervalo)
+            time.sleep(intervalo)
         print("Todos los eventos enviados. El consumidor los irá procesando solo.")
     except KeyboardInterrupt:
         print("\nProductor detenido.")
 
 
+# Endpoint para cargar eventos en vivo del Productor
+@app.route('/api/eventos')
+def api_eventos():
+    eventos = []
+    if ARCHIVO_EVENTOS.exists():
+        with open(ARCHIVO_EVENTOS, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    eventos.append(json.loads(line))
+    return jsonify(eventos)
+
+
+# Endpoint para cargar las notificaciones generadas por Spark (Consumidor)
+@app.route('/api/notificaciones')
+def api_notificaciones():
+    notificaciones = []
+    if SALIDA_NOTIFICACIONES.exists():
+        with open(SALIDA_NOTIFICACIONES, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    notificaciones.append(json.loads(line))
+    return jsonify(notificaciones)
+
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--intervalo", type=float, default=1.0, help="segundos entre eventos")
+    parser.add_argument("--prob-pago", type=float, default=0.4, help="probabilidad de pago")
+    parser.add_argument("--semilla", type=int, default=7)
+    args = parser.parse_args()
+
+    # Inicia el generador de eventos en segundo plano
+    hilo = threading.Thread(
+        target=generar_eventos_background,
+        args=(args.intervalo, args.prob_pago, args.semilla),
+        daemon=True
+    )
+    hilo.start()
+
+    app.run(debug=True, port=5000, use_reloader=False)
