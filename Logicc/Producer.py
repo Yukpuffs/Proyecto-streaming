@@ -1,51 +1,96 @@
-#Represents the flow of shopping carts, but in function with the producer
-import socket
-import time
+
+import argparse
 import json
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, to_timestamp, unix_timestamp, current_timestamp
+import random # Library to generate random numbers and make random selections
+import time
+from datetime import datetime
+from pathlib import Path # Replace the way to handle paths to files with the Path class
 
-# 1. Create SparkSession
+# Step 2: Read the events from the JSONL file into a Spark DataFrame
 
-spark = SparkSession.builder \
-    .appName("E-commerce streaming") \
-    .master("local[*]") \
-    .getOrCreate()
+BASE = Path(__file__).resolve().parent
+ARCHIVO_EVENTOS = BASE / "eventos.jsonl"
+
+#Step 3: Transform the data to prepare for consumer analysis
+
+def cargar_eventos(prob_pago, semilla): # Funtion to simulate the events of users adding products to their carts and starting the payment process
+    with open(BASE / "carritos.json", encoding="utf-8") as f:
+        carritos = json.load(f)
+
+    carritos.sort(key=lambda c: c["timestamp"])
+
+    eventos = []
+    for c in carritos:
+        eventos.append({
+            "tipo_evento": "agregar_carrito",
+            "carrito_id": c["carrito_id"],
+            "usuario": c["usuario"],
+            "email": c["email"],
+            "producto": c["producto"],
+            "categoria": c["categoria"],
+            "cantidad": c["cantidad"],
+            "precio_unitario": c["precio_unitario"],
+        })
+
+    rnd = random.Random(semilla)
+    usuarios = sorted({e["usuario"] for e in eventos})
+    compradores = {u for u in usuarios if rnd.random() < prob_pago}
+
+    ultimo = {}
+    for i, e in enumerate(eventos):
+        ultimo[e["usuario"]] = i
+
+    insertar = {}
+    for u in compradores:
+        pos = min(ultimo[u] + 3, len(eventos) - 1)
+        insertar.setdefault(pos, []).append({
+            "tipo_evento": "pago_iniciado", "usuario": u,
+            "email": next(e["email"] for e in eventos if e["usuario"] == u),
+        })
+
+    cola = []
+    for i, e in enumerate(eventos):
+        cola.append(e)
+        cola.extend(insertar.get(i, []))
+    return cola, compradores, usuarios
 
 
-# 2. Read the file: Example of shopping carts 
+def enviar(evento):
+    evento["timestamp"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    with open(ARCHIVO_EVENTOS, "a", encoding="utf-8") as f:
+        f.write(json.dumps(evento, ensure_ascii=False) + "\n")
+    return evento
 
-carrito_rdd = spark.read.option("multiLine", True).json("carritos.json")
 
-# 3. Convert the text "2026-09-27T18:04:12" to a real timestamp and sort
-carritos_df = carrito_rdd.withColumn("timestamp_ts", to_timestamp(col("timestamp")))
-order = carritos_df.orderBy(col("timestamp_ts").asc())
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--intervalo", type=float, default=1.0,
+                    help="segundos entre eventos")
+    ap.add_argument("--prob-pago", type=float, default=0.4,
+                    help="probabilidad de que un usuario llegue a la pasarela de pago")
+    ap.add_argument("--semilla", type=int, default=7)
+    args = ap.parse_args()
 
-# 4. Action every 10 seconds, show the carts that are older than 60 seconds
-servidor = socket.socket()
-servidor.bind(("localhost", 9999))
-servidor.listen(1)
-print("Productor esperando al consumidor...")
-conexion, _ = servidor.accept()
-print("Consumidor conectado")
-vistos = set()  # for keeping track of the carts already shown
+    # Empezar el archivo desde cero en cada corrida
+    ARCHIVO_EVENTOS.write_text("", encoding="utf-8")
 
-while True:
-    filtrados = order.filter(
-        unix_timestamp(current_timestamp()) - unix_timestamp(col("timestamp_ts")) > 60
-    )
+    cola, compradores, usuarios = cargar_eventos(args.prob_pago, args.semilla)
+    print(f"{len(cola)} eventos listos | {len(usuarios)} usuarios | "
+          f"{len(compradores)} llegarán a pago: {sorted(compradores)}")
+    print(f"  => deberían quedar como ABANDONADOS: "
+          f"{sorted(set(usuarios) - compradores)}")
+    print(f"Escribiendo en {ARCHIVO_EVENTOS.name} (Ctrl+C para terminar)")
 
-    if vistos:
-        filtrados = filtrados.filter(~col("carrito_id").isin(list(vistos)))
+    try:
+        for e in cola:
+            e = enviar(e)
+            print(f"[{e['timestamp']}] {e['tipo_evento']:<16} {e['usuario']}"
+                  f" {e.get('producto', '')}")
+            time.sleep(args.intervalo)
+        print("Todos los eventos enviados. El consumidor los irá procesando solo.")
+    except KeyboardInterrupt:
+        print("\nProductor detenido.")
 
-    # Only take the oldest of those that are missing
-    siguiente = filtrados.orderBy(col("timestamp_ts").asc()).limit(1).collect()
 
-    if siguiente:
-        fila = siguiente[0]
-        conexion.sendall((json.dumps(fila.asDict(), default=str, ensure_ascii=False) + "\n").encode("utf-8"))
-        vistos.add(fila["carrito_id"])
-    else:
-        print("No hay más carritos abandonados por mostrar")
-
-    time.sleep(10)  
+if __name__ == "__main__":
+    main()
