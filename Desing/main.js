@@ -90,7 +90,7 @@ document.getElementById('LoadConsu').addEventListener('click', () => {
                 const productos = Array.isArray(item.productos) ? item.productos.join(', ') : item.productos;
 
                 htmlContent += `
-                    <div class="card-item rounded p-3 bg-white border-start  border-4 shadow-sm cardd m-3">
+                    <div class="card-item rounded p-3 border-start border-4 shadow-s m-3 cardd">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="badge bg-danger">Carrito Abandonado</span>
                             <span class="badge bg-success">$${total}</span>
