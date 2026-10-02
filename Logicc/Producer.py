@@ -7,8 +7,6 @@ from datetime import datetime
 from pathlib import Path # Replace the way to handle paths to files with the Path class
 from flask import Flask, render_template, jsonify
 
-# Step 2: Read the events from the JSONL file into a Spark DataFrame
-
 BASE = Path(__file__).resolve().parent
 PROYECTO_ROOT = BASE.parent
 ARCHIVO_EVENTOS = BASE / "eventos.jsonl"
@@ -26,7 +24,7 @@ app = Flask(
 def web():
     return render_template('Index.html')
 
-#Step 3: Transform the data to prepare for consumer analysis
+#Step 2: Transform the data to prepare for consumer analysis
 
 def cargar_eventos(prob_pago, semilla): # Funtion to simulate the events of users adding products to their carts and starting the payment process
     with open(BASE / "carritos.json", encoding="utf-8") as f: 
@@ -77,15 +75,15 @@ def enviar(evento): # Create a function to send events to the JSONL file with th
     return evento
 
 
-def generar_eventos_background(intervalo=1.0, prob_pago=0.4, semilla=7): # Given the interval between events, the probability of payment, and a seed for random number generation, generate events in the background
-    ARCHIVO_EVENTOS.write_text("", encoding="utf-8")
+def generar_eventos(intervalo=1.0, prob_pago=0.4, semilla=7): # Given the interval between events, the probability of payment, and a seed for random number generation, generate events in the background
+    ARCHIVO_EVENTOS.write_text("", encoding="utf-8") # clean the events file before starting to generate new events
 
     cola, compradores, usuarios = cargar_eventos(prob_pago, semilla)
     print(f"{len(cola)} eventos listos | {len(usuarios)} usuarios | "
           f"{len(compradores)} llegarán a pago: {sorted(compradores)}")
-    print(f"  => deberían quedar como ABANDONADOS: "
+    print(f" deberían quedar como ABANDONADOS: "
           f"{sorted(set(usuarios) - compradores)}")
-    print(f"Escribiendo en {ARCHIVO_EVENTOS.name} (Ctrl+C para terminar)")
+    print(f"Escribiendo en {ARCHIVO_EVENTOS.name}")
 
     try:
         for e in cola:
@@ -98,7 +96,7 @@ def generar_eventos_background(intervalo=1.0, prob_pago=0.4, semilla=7): # Given
         print("\nProductor detenido.")
 
 
-@app.route('/api/eventos') # Endoint Flask to return the events in the JSONL file as a JSON array
+@app.route('/api/eventos') # Endpoint Flask to return the events in the JSONL file as a JSON array
 def api_eventos():
     eventos = []
     if ARCHIVO_EVENTOS.exists():
@@ -128,7 +126,7 @@ if __name__ == "__main__": # flow in which the producer generates events in the 
     args = parser.parse_args()
 
     hilo = threading.Thread(
-        target=generar_eventos_background,
+        target=generar_eventos,
         args=(args.intervalo, args.prob_pago, args.semilla),
         daemon=True
     )
