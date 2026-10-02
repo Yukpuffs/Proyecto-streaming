@@ -1,11 +1,13 @@
 import argparse
 import json
-import random
+import random # Library to generate random numbers and make random selections
 import threading
 import time
 from datetime import datetime
-from pathlib import Path
+from pathlib import Path # Replace the way to handle paths to files with the Path class
 from flask import Flask, render_template, jsonify
+
+# Step 2: Read the events from the JSONL file into a Spark DataFrame
 
 BASE = Path(__file__).resolve().parent
 PROYECTO_ROOT = BASE.parent
@@ -19,20 +21,21 @@ app = Flask(
     static_url_path="" 
 )
 
-# Renderiza la página principal
+# Render the main page of the web application
 @app.route('/')
 def web():
     return render_template('Index.html')
 
+#Step 3: Transform the data to prepare for consumer analysis
 
-def cargar_eventos(prob_pago, semilla):
+def cargar_eventos(prob_pago, semilla): # Funtion to simulate the events of users adding products to their carts and starting the payment process
     with open(BASE / "carritos.json", encoding="utf-8") as f: 
         carritos = json.load(f)
 
-    carritos.sort(key=lambda c: c["timestamp"])
+    carritos.sort(key=lambda c: c["timestamp"]) # Sort the carts by timestamp to simulate the order in which users added products to their carts
 
-    eventos = []
-    for c in carritos:
+    eventos = [] 
+    for c in carritos: # Loop through each cart and create an event for each product added to the cart
         eventos.append({
             "tipo_evento": "agregar_carrito",
             "carrito_id": c["carrito_id"],
@@ -44,16 +47,16 @@ def cargar_eventos(prob_pago, semilla):
             "precio_unitario": c["precio_unitario"],
         })
 
-    rnd = random.Random(semilla) 
-    usuarios = sorted({e["usuario"] for e in eventos})
-    compradores = {u for u in usuarios if rnd.random() < prob_pago}
+    rnd = random.Random(semilla) # 
+    usuarios = sorted({e["usuario"] for e in eventos}) 
+    compradores = {u for u in usuarios if rnd.random() < prob_pago} # Create a set of users who will start the payment process based on the probability of payment
 
     ultimo = {}
-    for i, e in enumerate(eventos):
+    for i, e in enumerate(eventos): # Save the index of the last event for each user to know when to insert the payment initiation event
         ultimo[e["usuario"]] = i
 
     insertar = {}
-    for u in compradores:
+    for u in compradores: # For each user who will start the payment process 
         pos = min(ultimo[u] + 3, len(eventos) - 1)
         insertar.setdefault(pos, []).append({
             "tipo_evento": "pago_iniciado", "usuario": u,
@@ -67,14 +70,14 @@ def cargar_eventos(prob_pago, semilla):
     return cola, compradores, usuarios
 
 
-def enviar(evento):
+def enviar(evento): # Create a function to send events to the JSONL file with the current timestamp
     evento["timestamp"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     with open(ARCHIVO_EVENTOS, "a", encoding="utf-8") as f:
         f.write(json.dumps(evento, ensure_ascii=False) + "\n")
     return evento
 
 
-def generar_eventos_background(intervalo=1.0, prob_pago=0.4, semilla=7):
+def generar_eventos_background(intervalo=1.0, prob_pago=0.4, semilla=7): # Given the interval between events, the probability of payment, and a seed for random number generation, generate events in the background
     ARCHIVO_EVENTOS.write_text("", encoding="utf-8")
 
     cola, compradores, usuarios = cargar_eventos(prob_pago, semilla)
@@ -95,8 +98,7 @@ def generar_eventos_background(intervalo=1.0, prob_pago=0.4, semilla=7):
         print("\nProductor detenido.")
 
 
-# Endpoint para cargar eventos en vivo del Productor
-@app.route('/api/eventos')
+@app.route('/api/eventos') # Endoint Flask to return the events in the JSONL file as a JSON array
 def api_eventos():
     eventos = []
     if ARCHIVO_EVENTOS.exists():
@@ -107,8 +109,7 @@ def api_eventos():
     return jsonify(eventos)
 
 
-# Endpoint para cargar las notificaciones generadas por Spark (Consumidor)
-@app.route('/api/notificaciones')
+@app.route('/api/notificaciones') # Endpoint Flask to return the notifications only for consumer processing
 def api_notificaciones():
     notificaciones = []
     if SALIDA_NOTIFICACIONES.exists():
@@ -119,14 +120,13 @@ def api_notificaciones():
     return jsonify(notificaciones)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": # flow in which the producer generates events in the background and the Flask application runs to serve the web interface and API endpoints
     parser = argparse.ArgumentParser()
     parser.add_argument("--intervalo", type=float, default=1.0, help="segundos entre eventos")
     parser.add_argument("--prob-pago", type=float, default=0.4, help="probabilidad de pago")
     parser.add_argument("--semilla", type=int, default=7)
     args = parser.parse_args()
 
-    # Inicia el generador de eventos en segundo plano
     hilo = threading.Thread(
         target=generar_eventos_background,
         args=(args.intervalo, args.prob_pago, args.semilla),
