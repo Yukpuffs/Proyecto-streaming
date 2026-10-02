@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&family=McLaren&display=swap');
+
+.Wal{
+    background-color: #E4E6F2;
+}
+
+.titulo{
+    color: #1E1B3A;
+    font-style: bold;
+    font-family: 'Mclaren', sans-serif;
+}
+
+.mensaje{
+    color: #4A4F8A;
+}
+
+#espacio1{
+    background-color: #A8B4D8;
+    width:50%;
+}
+
+#espacio2{
+    background-color: #A8B4D8;
+    width: 50%;
+}
+
+.boton{
+    background-color: #1E1B3A;
+}
+
+.cardd{
+    background-color: #E4E6F2;
+}
