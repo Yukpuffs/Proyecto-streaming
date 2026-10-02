@@ -8,8 +8,8 @@ from pyspark.sql import functions as F # Library to use functions in Spark DataF
 BASE = Path(__file__).resolve().parent # Different way to get the path of the current file and its parent directory
 ARCHIVO_EVENTOS = BASE / "eventos.jsonl"
 
-GAP_SESION = "30 seconds" # Time of inactivity to consider a session closed
-BUFFER_CIERRE_SEGUNDOS = 30 # Time extra to wait before considering a session closed
+GAP_SESION = "20 seconds" # Time of inactivity to consider a session closed
+BUFFER_CIERRE_SEGUNDOS = 10 # Time extra to wait before considering a session closed
 SALIDA = BASE / "notificaciones.jsonl"
 
 # Step 1: Create a SparkSession
