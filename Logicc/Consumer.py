@@ -89,7 +89,7 @@ def loop_consumidor():
             calcular_y_notificar()
         except Exception as e:
             print(f"Error procesando eventos: {e}")
-        time.sleep(5)
+        time.sleep(1)
 
 
 if __name__ == '__main__':
