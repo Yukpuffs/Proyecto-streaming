@@ -18,11 +18,10 @@ def crear_bd():
             CHARACTER SET utf8mb4
             COLLATE utf8mb4_unicode_ci
         """)
-        print("Base de datos verificada/creada correctamente.")
+        print("Base de datos creada correctamente.")
     finally:
         cursor.close()
         conn.close()
-
 
 def get_connection():
     return mysql.connector.connect(
@@ -32,7 +31,6 @@ def get_connection():
         password="",
         database="ecommerce_streaming"
     )
-
 
 def crear_tabla():
     conn = get_connection()
@@ -47,7 +45,7 @@ def crear_tabla():
                 producto VARCHAR(255) NOT NULL,
                 cantidad INT NOT NULL,
                 precio DECIMAL(10,2) NOT NULL,
-                fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP 
             )
         """)
         conn.commit()
@@ -69,6 +67,16 @@ def guardar_evento(tipo_evento, usuario, email, producto, cantidad, precio, fech
         cursor.close()
         conn.close()
 
+def limpiar_eventos():
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM eventos_carritos")
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+        
 if __name__ == '__main__':
     crear_bd()
     crear_tabla()
