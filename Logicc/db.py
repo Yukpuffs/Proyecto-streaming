@@ -43,17 +43,6 @@ def crear_tabla():
                 fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS notificaciones (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                usuario VARCHAR(100) NOT NULL,
-                email VARCHAR(100) NOT NULL,
-                productos VARCHAR(500) NOT NULL,
-                valor_carrito DOUBLE NOT NULL,
-                mensaje VARCHAR(500) NOT NULL,
-                fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
         conn.commit()
     finally:
         cursor.close()
