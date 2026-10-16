@@ -1,3 +1,0 @@
-{"usuario": "josé", "email": "jose58@example.com", "valor_carrito": 39742.26, "productos": ["producto_3"], "mensaje": "Dejaste en tu carrito: producto_3 (total $39,742). ¡Vuelve y termina tu compra!"}
-{"usuario": "maría", "email": "bermudezaugusto@example.com", "valor_carrito": 5581.22, "productos": ["producto_5"], "mensaje": "Dejaste en tu carrito: producto_5 (total $5,581). ¡Vuelve y termina tu compra!"}
-{"usuario": "mauricio", "email": "wmora@example.org", "valor_carrito": 25415.2, "productos": ["producto_9"], "mensaje": "Dejaste en tu carrito: producto_9 (total $25,415). ¡Vuelve y termina tu compra!"}
