@@ -1,17 +1,20 @@
 import mysql.connector
 
+
 def get_server_connection():
+    return mysql.connector.connect(host="localhost", port=3306, user="root", password="")
+
+
+def get_connection():
     return mysql.connector.connect(
-        host="localhost",
-        port=3306,
-        user="root",
-        password=""
+        host="localhost", port=3306, user="root", password="",
+        database="ecommerce_streaming"
     )
+
 
 def crear_bd():
     conn = get_server_connection()
     cursor = conn.cursor()
-
     try:
         cursor.execute("""
             CREATE DATABASE IF NOT EXISTS ecommerce_streaming
@@ -23,14 +26,6 @@ def crear_bd():
         cursor.close()
         conn.close()
 
-def get_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        port=3306,
-        user="root",
-        password="",
-        database="ecommerce_streaming"
-    )
 
 def crear_tabla():
     conn = get_connection()
@@ -45,7 +40,18 @@ def crear_tabla():
                 producto VARCHAR(255) NOT NULL,
                 cantidad INT NOT NULL,
                 precio DECIMAL(10,2) NOT NULL,
-                fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP 
+                fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS notificaciones (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                usuario VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                productos VARCHAR(500) NOT NULL,
+                valor_carrito DOUBLE NOT NULL,
+                mensaje VARCHAR(500) NOT NULL,
+                fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         """)
         conn.commit()
@@ -53,30 +59,56 @@ def crear_tabla():
         cursor.close()
         conn.close()
 
-def guardar_evento(tipo_evento, usuario, email, producto, cantidad, precio, fecha):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute(
-            "INSERT INTO eventos_carritos (tipo_evento, usuario, email, producto, cantidad, precio, fecha) " 
-            "VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (tipo_evento, usuario, email, producto, cantidad, precio, fecha)
-        )
-        conn.commit() 
-    finally:
-        cursor.close()
-        conn.close()
 
-def limpiar_eventos():
+def guardar_evento(filas):
+    """filas: lista de tuplas (tipo_evento, usuario, email, producto, cantidad, precio, fecha)"""
+    if not filas:
+        return
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM eventos_carritos")
+        cursor.executemany(
+            "INSERT INTO eventos_carritos (tipo_evento, usuario, email, producto, cantidad, precio, fecha) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            filas
+        )
         conn.commit()
     finally:
         cursor.close()
         conn.close()
-        
+
+def guardar_notificacion(filas):
+    if not filas:
+        return
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.executemany(
+            "INSERT INTO notificaciones (usuario, email, productos, valor_carrito, mensaje) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            filas
+        )
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def obtener_notificacion(limite=20):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT usuario, email, productos, valor_carrito, mensaje "
+            "FROM notificaciones ORDER BY id DESC LIMIT %s", (limite,)
+        )
+        filas = cursor.fetchall()
+        return list(reversed(filas))
+    finally:
+        cursor.close()
+        conn.close()
+
+
 if __name__ == '__main__':
     crear_bd()
     crear_tabla()
