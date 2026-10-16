@@ -1,5 +1,12 @@
 let prodInterval = null;
 
+const claseBadge = (tipo) => {
+    if (tipo === 'pago_exitoso') return 'bg-success';
+    if (tipo === 'pago_fallido' || tipo === 'pago_rechazado') return 'bg-danger';
+    if (tipo === 'iniciar_pago') return 'bg-warning text-dark';
+    return 'bg-primary';
+};
+
 document.getElementById('LoadProd').addEventListener('click', () => {
     const contenedor = document.getElementById('espacio1');
     if (!contenedor) return;
@@ -14,9 +21,16 @@ document.getElementById('LoadProd').addEventListener('click', () => {
     }
 
     const actualizarProductor = () => {
-        fetch('/api/eventos')
-        .then(response => response.json())
-        .then(data => {
+        Promise.allSettled([
+            fetch('/api/eventos').then(r => r.json()),
+            fetch('/api/eventos2').then(r => r.json())
+        ])
+        .then(resultados => {
+            let data = [];
+            resultados.forEach(res => {
+                if (res.status === 'fulfilled') data = data.concat(res.value);
+            });
+
             if (data.length === 0) {
                 contenedor.innerHTML = `
                     <div class="p-3 text-muted" style="grid-column: span 2;">No hay eventos registrados aún.</div>
@@ -24,23 +38,26 @@ document.getElementById('LoadProd').addEventListener('click', () => {
                 return;
             }
 
-            const ultimosEventos = data.slice(-4).reverse();
+            // Más reciente primero (el timestamp ISO se ordena como texto)
+            data.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+            const ultimosEventos = data.slice(0, 4);
 
             let htmlContent = '';
             ultimosEventos.forEach(item => {
-                const tipo = item.tipo_evento || 'agregar_carrito';
-                const esPago = tipo === 'pago_iniciado';
-                const total = (item.precio_unitario && item.cantidad) ? (item.precio_unitario * item.cantidad).toLocaleString() : null;
-                
+                const tipo = item.tipo_evento || 'agregar_al_carrito';
+                const total = (item.precio && item.cantidad)
+                    ? (item.precio * item.cantidad).toLocaleString('es-CO')
+                    : null;
+
                 htmlContent += `
                     <div class="card-item rounded p-3 m-3 border-start border-4 shadow-sm cardd">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge ${esPago ? 'bg-success' : 'bg-primary'}">${tipo.replace('_', ' ')}</span>
+                            <span class="badge ${claseBadge(tipo)}">${tipo.replace(/_/g, ' ')}</span>
                             <small class="text-muted"> ${item.timestamp || ''}</small>
                         </div>
                         <h6 class="mb-1 text-dark"> ${item.usuario}</h6>
                         <p class="mb-1 text-muted small"><strong>Email:</strong> ${item.email || 'N/A'}</p>
-                        ${item.producto ? `<div class="p-2 bg-light rounded text-dark small mt-2">📦 <strong>${item.producto}</strong> (x${item.cantidad})${total ? `- $${total}` : ''}</div>` : ''}
+                        ${item.producto ? `<div class="p-2 bg-light rounded text-dark small mt-2"> <strong>${item.producto}</strong> (x${item.cantidad})${total ? ` - $${total}` : ''}</div>` : ''}
                     </div>
                 `;
             });
@@ -86,7 +103,7 @@ document.getElementById('LoadConsu').addEventListener('click', () => {
 
             let htmlContent = '';
             ultimasNotificaciones.forEach(item => {
-                const total = item.valor_carrito ? item.valor_carrito.toLocaleString() : 0;
+                const total = item.valor_carrito ? item.valor_carrito.toLocaleString('es-CO') : 0;
                 const productos = Array.isArray(item.productos) ? item.productos.join(', ') : item.productos;
 
                 htmlContent += `
